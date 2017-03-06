@@ -8,10 +8,6 @@ def sgd(w, dw, config=None):
     config format:
     - learning_rate: Scalar learning rate.
     """
-    if config is None:
-        config = {}
-    config.setdefault('learning_rate', 1e-2)
-
     w -= config['learning_rate'] * dw
     return w, config
 
@@ -28,11 +24,6 @@ def sgd_momentum(w, dw, config=None):
       average of the gradients.
 
     """
-
-    if config is None:
-        config = {}
-    config.setdefault('learning_rate', 1e-2)
-    config.setdefault('momentum', 0.9)
     v = config.get('velocity', np.zeros_like(w))
     next_v = config['momentum'] * v - config['learning_rate'] * dw
     next_w = w + next_v

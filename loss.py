@@ -54,13 +54,14 @@ def softmax_loss(x, y):
 
 
 def l1_loss(x, y):
-    error = abs(y - x)
-    dx = (-1.0 / len(x)) * np.sign(y - x) * x
-    return np.average(error), dx
+    error = y - x
+    dx = -1.0 * np.sign(error) * x
+    return np.average(np.abs(error)), dx
 
 
 def l2_loss(x, y):
     error = (y - x)
-    dx = (-1.0 / len(x)) * error * x
+    dx = -1.0 * error * x
+    print(np.average(error ** 2))
     return np.average(error ** 2), dx
 

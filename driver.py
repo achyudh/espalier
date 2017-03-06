@@ -3,6 +3,8 @@ import numpy as np
 from sklearn import datasets
 from util import  to_categorical
 
+np.random.seed(47)
+
 class DenseNet:
     def __init__(self, input_dim, optim_config, loss_fn):
         self.graph = Graph(input_dim, optim_config, loss_fn)
@@ -21,7 +23,6 @@ class DenseNet:
 
 
 class Graph:
-
     def __init__(self, input_dim, optim_config, loss_fn):
         self.input_dim = input_dim
         self.network = list()
@@ -65,11 +66,13 @@ class Graph:
             loss_val, dz = loss.l1_loss(self.output, expected)
         else:
             return "ERROR: Unknown loss function type"
-        for layer in reversed(self.network):
-            dx, dw, db = layer.backward(dz)
-            layer.dx = dx
-            layer.db = db
-            layer.dw = dw
+        self.network[-1].dx = dz
+        for idx in range(len(self.network)-1, -1, -1):
+            dx, dw, db = self.network[idx].backward(dz)
+            if idx != 0:
+                self.network[idx - 1] = dz
+            self.network[idx].db = db
+            self.network[idx].dw = dw
             dz = dx
         return loss_val
 
@@ -77,6 +80,7 @@ class Graph:
         if self.optim_config['type'] == 'sgd':
             for layer in self.network:
                 layer.w, config = optimizers.sgd(layer.w, layer.dw, self.optim_config)
+                layer.b, config = optimizers.sgd(layer.b, layer.db, self.optim_config)
         elif self.optim_config['type'] == 'sgd_momentum':
             layer_opt_config = self.optim_config
             for layer in self.network:
@@ -90,7 +94,7 @@ class ReLU:
         self.m = m
         self.d = d
         self.out1, self.out2, self.cache1, self.cache2 = None, None, None, None
-        self.w = np.random.rand(d, m)
+        self.w =  2*np.random.rand(d, m)-1
         self.b = np.random.rand(m)
         self.dw, self.dx, self.db = None, None, None
 
@@ -110,7 +114,7 @@ class Sigmoid:
         self.m = m
         self.d = d
         self.out1, self.out2, self.cache1, self.cache2 = None, None, None, None
-        self.w = np.random.rand(d, m)
+        self.w = 2*np.random.rand(d, m)-1
         self.b = np.random.rand(m)
         self.dw, self.dx, self.db = None, None, None
 
@@ -130,8 +134,9 @@ class Linear:
         self.m = m
         self.d = d
         self.out1, self.cache1 = None, None
-        self.w = np.random.rand(d, m)
+        self.w =  2*np.random.rand(d, m)-1
         self.b = np.random.rand(m)
+        self.dw, self.dx, self.db = None, None, None
 
     def forward(self, input):
         self.out1, self.cache1 = layers.linear_forward(input, self.w, self.b)
@@ -141,11 +146,15 @@ class Linear:
         dx, dw, db = layers.linear_backward(dz, self.cache1)
         return dx, dw, db
 
-iris = datasets.load_iris()
-X = iris.data
-Y = iris.target
-Y = to_categorical(iris.target, 3)
-dn = DenseNet(input_dim=4, optim_config={"type":"sgd", "learning_rate":0.5}, loss_fn='l2')
-dn.addlayer("ReLU", 4)
-dn.addlayer("ReLU", 3)
-print(dn.train(X, Y, 1))
+# iris = datasets.load_iris()
+# X = iris.data
+# Y = iris.target
+# Y = to_categorical(iris.target, 3)
+
+X = np.array([[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]])
+Y = [[0], [0], [0], [0], [0], [0], [0], [1]]
+dn = DenseNet(input_dim=3, optim_config={"type":"sgd", "learning_rate": 0.5}, loss_fn='l1')
+dn.addlayer("Linear", 1)
+# dn.addlayer("Linear", 1)
+for i in range(5):
+    print(dn.train(X, Y)[1])

@@ -13,7 +13,7 @@ def linear_forward(x, w, b):
 def linear_backward(dout, cache):
     x, w, b = cache
     dx = np.dot(dout, w.T).reshape(x.shape)
-    dw = np.dot(x.reshape(x.shape[0], np.prod(x.shape[1:])).T, dout)
+    dw = dout.T.dot(x.reshape(x.shape[0], np.product(x.shape[1:]))).T
     db = np.sum(dout, axis=0)
     return dx, dw, db
 
