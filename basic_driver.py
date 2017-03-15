@@ -4,6 +4,7 @@ import layers
 import loss
 import optimizers
 
+from sklearn.datasets import load_iris
 np.random.seed(47)
 
 
@@ -60,6 +61,10 @@ class Graph:
             loss_val, dz = loss.l2_loss(self.predicted_output, expected)
         elif self.loss_fn == "l1":
             loss_val, dz = loss.l1_loss(self.predicted_output, expected)
+        elif self.loss_fn == "softmax":
+            loss_val, dz = loss.softmax_loss(self.predicted_output, expected)
+        elif self.loss_fn == "svm":
+            loss_val, dz = loss.svm_loss(self.predicted_output, expected)
         for layer in reversed(self.network):
             dx, dw, db = layer.backward(dz)
             layer.dx, layer.dw, layer.db = dx, dw, db
@@ -71,6 +76,11 @@ class Graph:
             for layer in self.network:
                 layer.w, config = optimizers.sgd(layer.w, layer.dw, self.optim_config)
                 layer.b, config = optimizers.sgd(layer.b, layer.db, self.optim_config)
+        elif self.optim_config['type'] == 'momentum':
+            for layer in self.network:
+                layer.w, config = optimizers.sgd_momentum(layer.w, layer.dw, self.optim_config)
+                layer.b, config = optimizers.sgd_momentum(layer.b, layer.db, self.optim_config)
+
 
 
 class Linear:
@@ -132,7 +142,7 @@ class Sigmoid:
 
 
 def two_bit_xor_relu():
-    print("Initializing net for two bit xor problem")
+    print("Initializing net for two bit xor problem. . .")
     dn = DenseNet(input_dim=2, optim_config={"type": "sgd", "learning_rate": 0.3}, loss_fn='l2')
 
     dn.addlayer("ReLU", 2)
@@ -148,7 +158,7 @@ def two_bit_xor_relu():
 
 
 def add_three_numbers():
-    print("Initializing net for adding three numbers")
+    print("Initializing net for adding three numbers. . .")
     dn = DenseNet(input_dim=3, optim_config={"type": "sgd", "learning_rate": 0.5}, loss_fn='l2')
 
     dn.addlayer("Linear", 1)
@@ -162,7 +172,7 @@ def add_three_numbers():
 
 
 def two_bit_xor_sigmoid():
-    print("Initializing net for two bit xor problem")
+    print("Initializing net for two bit xor problem. . . ")
     dn = DenseNet(input_dim=2, optim_config={"type": "sgd", "learning_rate": 0.3}, loss_fn='l2')
 
     dn.addlayer("Sigmoid", 2)
@@ -176,6 +186,52 @@ def two_bit_xor_sigmoid():
         dn.train(X, Y)
     print("Ans is: ", dn.predict(np.array([[1, 0]])))
 
-two_bit_xor_sigmoid()
+def iris_softmax():
+    print("Initializing net for Iris dataset classification problem. . .")
+    iris = load_iris()
+    X = iris.data
+    Y = iris.target
+
+    dn = DenseNet(input_dim=4, optim_config={"type": "sgd", "learning_rate": 0.05}, loss_fn='softmax')
+    dn.addlayer("ReLU", 4)
+    dn.addlayer("ReLU", 6)
+    dn.addlayer("ReLU", 3)
+
+    for i in range(600):
+        print("Iteration: ", i)
+        dn.train(X, Y)
+
+def iris_svm():
+    print("Initializing net for Iris dataset classification problem. . .")
+    iris = load_iris()
+    X = iris.data
+    Y = iris.target
+
+    dn = DenseNet(input_dim=4, optim_config={"type": "sgd", "learning_rate": 0.01}, loss_fn='svm')
+    dn.addlayer("ReLU", 4)
+    dn.addlayer("ReLU", 6)
+    dn.addlayer("ReLU", 3)
+
+    for i in range(1000):
+        print("Iteration: ", i)
+        dn.train(X, Y)
+
+# def iris_svm_momentum():
+#     print("Initializing net for Iris dataset classification problem. . .")
+#     iris = load_iris()
+#     X = iris.data
+#     Y = iris.target
+#
+#     dn = DenseNet(input_dim=4, optim_config={"type": "momentum", "learning_rate": 0.01, "momentum":0.5}, loss_fn='svm')
+#     dn.addlayer("ReLU", 4)
+#     dn.addlayer("ReLU", 6)
+#     dn.addlayer("ReLU", 3)
+#
+#     for i in range(1000):
+#         print("Iteration: ", i)
+#         dn.train(X, Y)
+
+#two_bit_xor_sigmoid()
 print("*******************")
 add_three_numbers()
+# iris_svm_momentum()
