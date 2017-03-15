@@ -43,6 +43,8 @@ class Graph:
             self.network.append(Linear(dim, units))
         elif activation == "ReLU":
             self.network.append(ReLU(dim, units))
+        elif activation == "Sigmoid":
+            self.network.append(Sigmoid(dim, units))
 
     def forward(self, input_):
         self.input = input_
@@ -94,7 +96,7 @@ class ReLU:
         self.m = m
         self.d = d
         self.out1, self.out2, self.cache1, self.cache2 = None, None, None, None
-        self.w =  2*np.random.rand(d, m)-1
+        self.w = 2 * np.random.rand(d, m) - 1
         self.b = np.random.rand(m)
         self.dw, self.dx, self.db = None, None, None
 
@@ -109,23 +111,40 @@ class ReLU:
         return dx2, dw, db
 
 
+class Sigmoid:
+    def __init__(self, d, m):
+        self.m = m
+        self.d = d
+        self.out1, self.out2, self.cache1, self.cache2 = None, None, None, None
+        self.w = 2*np.random.rand(d, m)-1
+        self.b = np.random.rand(m)
+        self.dw, self.dx, self.db = None, None, None
 
-def two_bit_xor():
+    def forward(self, input):
+        self.out1, self.cache1 = layers.linear_forward(input, self.w, self.b)
+        self.out2, self.cache2 = layers.sigmoid_forward(self.out1)
+        return self.out2
+
+    def backward(self, dz):
+        dx1 = layers.sigmoid_backward(dz, self.cache2)
+        dx2, dw, db = layers.linear_backward(dx1, self.cache1)
+        return dx2, dw, db
+
+
+def two_bit_xor_relu():
     print("Initializing net for two bit xor problem")
     dn = DenseNet(input_dim=2, optim_config={"type": "sgd", "learning_rate": 0.3}, loss_fn='l2')
 
     dn.addlayer("ReLU", 2)
     dn.addlayer("ReLU", 1)
-    # X = np.array([[0.1, 0.2], [0.1, 0.1],[0.2, 0.3]])
-    # Y = np.array([[0.3, 0.1], [0.2, 0.1], [0.5, 0.2]])
 
-    X = np.array([[1.0, 1.0], [0.0, 1.0],[0.0, 0.0]])
+    X = np.array([[1.0, 1.0], [0.0, 1.0], [0.0, 0.0]])
     Y = np.array([[0.0], [1.0], [0.0]])
 
     for i in range(50):
-        print("Iteration: ",i)
+        print("Iteration: ", i)
         dn.train(X, Y)
-    print( "Ans is: ",dn.predict(np.array([[1, 1]])))
+    print("Ans is: ", dn.predict(np.array([[1, 0]])))
 
 
 def add_three_numbers():
@@ -133,15 +152,30 @@ def add_three_numbers():
     dn = DenseNet(input_dim=3, optim_config={"type": "sgd", "learning_rate": 0.5}, loss_fn='l2')
 
     dn.addlayer("Linear", 1)
-    X = np.array([[0.1, 0.2, 0.4], [0.1, 0.1, 0.3],[0.2, 0.3, 0.6]])
+    X = np.array([[0.1, 0.2, 0.4], [0.1, 0.1, 0.3], [0.2, 0.3, 0.6]])
     Y = np.array([[0.7], [0.5], [1.1]])
 
     for i in range(50):
         print("Iteration: ", i)
         dn.train(X, Y)
-    print("Ans is: ", dn.predict(np.array([[0.2,0.3,0.1]])))
+    print("Ans is: ", dn.predict(np.array([[0.2, 0.3, 0.1]])))
 
 
-two_bit_xor()
+def two_bit_xor_sigmoid():
+    print("Initializing net for two bit xor problem")
+    dn = DenseNet(input_dim=2, optim_config={"type": "sgd", "learning_rate": 0.3}, loss_fn='l2')
+
+    dn.addlayer("Sigmoid", 2)
+    dn.addlayer("Sigmoid", 1)
+
+    X = np.array([[1.0, 1.0], [0.0, 1.0], [0.0, 0.0]])
+    Y = np.array([[0.0], [1.0], [0.0]])
+
+    for i in range(300):
+        print("Iteration: ", i)
+        dn.train(X, Y)
+    print("Ans is: ", dn.predict(np.array([[1, 0]])))
+
+two_bit_xor_sigmoid()
 print("*******************")
 add_three_numbers()

@@ -31,5 +31,11 @@ def relu_backward(dout, cache):
     dx[x <= 0] = 0
     return dx
 
+def sigmoid_forward(x):
+    out = 1.0/(1 + np.exp(-x))
+    cache = out*(1-out)
+    return out, cache
 
-
+def sigmoid_backward(dout, cache):
+    x = cache
+    return x*dout
