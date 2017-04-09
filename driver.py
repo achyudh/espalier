@@ -39,6 +39,7 @@ class Graph:
             self.network.append(ReLU(dim, units))
             return "SUCCESS: ReLU layer added"
         elif activation == "Linear":
+            print("Linear layer added")
             self.network.append(Linear(dim, units))
             return "SUCCESS: Linear layer added"
         # elif activation == "Softmax":

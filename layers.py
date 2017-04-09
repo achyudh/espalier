@@ -12,6 +12,7 @@ def linear_forward(x, w, b):
 
 def linear_backward(dout, cache):
     x, w, b = cache
+    # print("x,b,w: ",x,b,w)
     dx = np.dot(dout, w.T).reshape(x.shape)
     dw = dout.T.dot(x.reshape(x.shape[0], np.product(x.shape[1:]))).T
     db = np.sum(dout, axis=0)
@@ -30,5 +31,11 @@ def relu_backward(dout, cache):
     dx[x <= 0] = 0
     return dx
 
+def sigmoid_forward(x):
+    out = 1.0/(1 + np.exp(-x))
+    cache = out*(1-out)
+    return out, cache
 
-
+def sigmoid_backward(dout, cache):
+    x = cache
+    return x*dout
