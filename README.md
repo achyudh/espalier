@@ -1,4 +1,4 @@
-# Dense-Net
+# Espalier
 A feed-forward neural network library that uses the computational graph approach to compute the gradients. This library supports ANNs of arbitrary size as defined by the user.
 
 ![Computational Graph](https://colah.github.io/posts/2015-08-Backprop/img/tree-eval-derivs.png)
