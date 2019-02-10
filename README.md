@@ -1,6 +1,8 @@
 # Espalier
 A feed-forward neural network library that uses the computational graph approach to compute the gradients. This library supports ANNs of arbitrary size as defined by the user.
 
+> Espalier is the horticultural and ancient agricultural practice of controlling woody plant growth for the production of fruit, by pruning and tying branches to a frame. - Wikipedia
+
 ![Computational Graph](https://colah.github.io/posts/2015-08-Backprop/img/tree-eval-derivs.png)
 
 ## Getting Started:
