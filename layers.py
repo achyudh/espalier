@@ -16,7 +16,7 @@ def linear_backward(dout, cache):
     dx = np.dot(dout, w.T).reshape(x.shape)
     dw = dout.T.dot(x.reshape(x.shape[0], np.product(x.shape[1:]))).T
     db = np.sum(dout, axis=0)
-    return dx, dw, db
+    return dx, dw/x.shape[0], db/x.shape[0]
 
 
 def relu_forward(x):
